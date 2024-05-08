@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { SortMenu, TodoList, TodoModal, TodoModalProps } from './components'
-import { dummyTodos } from './dummyData'
+import { useHandleTodos } from 'hooks/useHandleTodos'
 
 export type ModalDataProps = {
 	variant: TodoModalProps['variant']
@@ -11,13 +11,16 @@ export type ModalDataProps = {
 }
 
 function App() {
-	const [filterOption, setFilterOption] = useState('default')
+	const [sortOption, setSortOption] = useState('default')
 	const [isModalVisible, setIsModalVisible] = useState(false)
 	const [modalData, setModalData] = useState<ModalDataProps>({
 		variant: 'create',
 		title: '',
 		dueDate: '',
 	})
+
+	const { todosList, handleCreateTodo, handleDeleteTodo, handleUpdateTodo } =
+		useHandleTodos(sortOption)
 
 	const hideModal = () => {
 		setIsModalVisible(false)
@@ -29,12 +32,11 @@ function App() {
 
 	return (
 		<>
-			{' '}
 			<div className="bg-gray-600 divide-y-2 divide-gray-500 flex flex-col w-lvw h-lvh justify-center items-center overflow-hidden">
 				<div className="w-full flex justify-center py-2">
 					<SortMenu
-						filterOption={filterOption}
-						setFilterOption={setFilterOption}
+						sortOption={sortOption}
+						setSortOption={setSortOption}
 					/>
 					<button
 						onClick={() => {
@@ -51,7 +53,7 @@ function App() {
 					</button>
 				</div>
 				<TodoList
-					todos={dummyTodos}
+					todos={todosList}
 					setModalData={setModalData}
 					showModal={showModal}
 				/>
@@ -59,6 +61,9 @@ function App() {
 			{isModalVisible && (
 				<TodoModal
 					hideModal={hideModal}
+					onClickCreate={handleCreateTodo}
+					onClickDelete={handleDeleteTodo}
+					onClickUpdate={handleUpdateTodo}
 					{...modalData}
 				/>
 			)}
