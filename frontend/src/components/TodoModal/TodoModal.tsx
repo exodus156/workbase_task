@@ -1,12 +1,24 @@
+import { useState } from 'react'
+
+/* eslint-disable no-unused-vars */
 export type TodoModalProps = {
 	variant: 'create' | 'update'
 	title?: string
 	dueDate?: string
 	isCompleted?: boolean
 	id?: string
-	onClickCreate?: () => void
-	onClickUpdate?: () => void
-	onClickDelete?: () => void
+	onClickCreate?: (data: {
+		title: string
+		dueDate: string
+		isCompleted: boolean
+	}) => void
+	onClickUpdate?: (data: {
+		id: string
+		title: string
+		dueDate: string
+		isCompleted: boolean
+	}) => void
+	onClickDelete?: (id: string) => void
 	hideModal: () => void
 }
 
@@ -21,17 +33,29 @@ export const TodoModal: React.FC<TodoModalProps> = ({
 	onClickUpdate,
 	hideModal,
 }) => {
+	const [titleInput, setTitleInput] = useState(title ?? '')
+	const [dueDateInput, setDueDateInput] = useState(dueDate ?? '')
+	const [isCompleteInput, setIsCompleteInput] = useState(isCompleted ?? false)
+
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault()
 		if (variant === 'create' && onClickCreate) {
-			onClickCreate()
+			onClickCreate({
+				title: titleInput,
+				dueDate: dueDateInput,
+				isCompleted: isCompleteInput,
+			})
 			hideModal()
 			return
 		}
 
-		if (variant === 'update' && onClickUpdate) {
-			console.log(id)
-			onClickUpdate()
+		if (variant === 'update' && onClickUpdate && id) {
+			onClickUpdate({
+				id,
+				title: titleInput,
+				dueDate: dueDateInput,
+				isCompleted: isCompleteInput,
+			})
 			hideModal()
 			return
 		}
@@ -95,7 +119,10 @@ export const TodoModal: React.FC<TodoModalProps> = ({
 									id="title"
 									className="border text-sm rounded-lg block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
 									placeholder="What's to do?"
-									defaultValue={title}
+									value={titleInput}
+									onChange={(e) => {
+										setTitleInput(e.target.value)
+									}}
 									required
 								/>
 							</div>
@@ -112,7 +139,10 @@ export const TodoModal: React.FC<TodoModalProps> = ({
 									id="dueDate"
 									className="border text-sm rounded-lg block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-primary-500 focus:border-primary-500"
 									placeholder="Select due date"
-									defaultValue={dueDate}
+									value={dueDateInput}
+									onChange={(e) => {
+										setDueDateInput(e.target.value)
+									}}
 									required
 								/>
 							</div>
@@ -126,7 +156,14 @@ export const TodoModal: React.FC<TodoModalProps> = ({
 								<select
 									id="Status"
 									className="border text-sm rounded-lg block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 hover:bg-gray-600 text-white focus:ring-primary-500 focus:border-primary-500"
-									defaultValue={isCompleted ? 'Completed' : 'Pending'}
+									value={isCompleteInput ? 'Completed' : 'Pending'}
+									onChange={(e) => {
+										if (e.target.value === 'Completed') {
+											setIsCompleteInput(true)
+											return
+										}
+										setIsCompleteInput(false)
+									}}
 								>
 									<option>Select status</option>
 									<option value="Pending">Pending</option>
@@ -141,10 +178,13 @@ export const TodoModal: React.FC<TodoModalProps> = ({
 							>
 								{variant === 'create' ? 'Add new todo' : 'Update todo'}
 							</button>
-							{variant === 'update' && (
+							{variant === 'update' && id && onClickDelete && (
 								<button
 									type="button"
-									onClick={onClickDelete}
+									onClick={() => {
+										onClickDelete(id)
+										hideModal()
+									}}
 									className="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center"
 								>
 									Delete todo
